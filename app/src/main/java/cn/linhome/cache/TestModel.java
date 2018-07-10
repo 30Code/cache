@@ -1,4 +1,4 @@
-package com.fanwe.cache;
+package cn.linhome.cache;
 
 import java.io.Serializable;
 import java.util.HashMap;

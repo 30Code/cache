@@ -1,4 +1,4 @@
-package com.fanwe.lib.cache;
+package cn.linhome.lib.cache;
 
 import java.io.Closeable;
 import java.io.File;

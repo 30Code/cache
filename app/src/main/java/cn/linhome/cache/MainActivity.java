@@ -1,4 +1,4 @@
-package com.fanwe.cache;
+package cn.linhome.cache;
 
 import android.os.Environment;
 import android.support.v7.app.AppCompatActivity;
@@ -6,9 +6,9 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 
-import com.fanwe.cache.converter.FastjsonObjectConverter;
-import com.fanwe.cache.converter.GlobalEncryptConverter;
-import com.fanwe.lib.cache.SDDisk;
+import cn.linhome.cache.converter.FastjsonObjectConverter;
+import cn.linhome.cache.converter.GlobalEncryptConverter;
+import cn.linhome.lib.cache.SDDisk;
 
 public class MainActivity extends AppCompatActivity implements View.OnClickListener
 {

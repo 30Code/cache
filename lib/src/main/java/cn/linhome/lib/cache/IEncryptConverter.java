@@ -13,38 +13,26 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.fanwe.lib.cache;
+package cn.linhome.lib.cache;
 
-import java.io.File;
-
-
-interface ISDDiskInfo
+/**
+ * 加解密转换器
+ */
+public interface IEncryptConverter
 {
     /**
-     * 存取的目录
+     * 加密字符串
      *
+     * @param content
      * @return
      */
-    File getDirectory();
+    String encrypt(String content);
 
     /**
-     * 是否需要加密
+     * 解密字符串
      *
+     * @param content
      * @return
      */
-    boolean isEncrypt();
-
-    /**
-     * 返回加解密转换器
-     *
-     * @return
-     */
-    IEncryptConverter getEncryptConverter();
-
-    /**
-     * 返回对象转换器
-     *
-     * @return
-     */
-    IObjectConverter getObjectConverter();
+    String decrypt(String content);
 }
