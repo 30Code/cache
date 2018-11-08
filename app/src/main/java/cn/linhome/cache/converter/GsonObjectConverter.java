@@ -2,7 +2,7 @@ package cn.linhome.cache.converter;
 
 import com.google.gson.Gson;
 
-import cn.linhome.lib.cache.IObjectConverter;
+import cn.linhome.lib.cache.converter.IObjectConverter;
 
 /**
  * Created by Administrator on 2017/8/29.

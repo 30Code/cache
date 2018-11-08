@@ -1,27 +1,13 @@
-/*
- * Copyright (C) 2017 zhengjun, fanwe (http://www.fanwe.com)
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
 package cn.linhome.lib.cache;
 
 import android.content.Context;
 
 import java.io.File;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 
-abstract class ASDDisk implements ISDDisk, ISDDiskInfo
+import cn.linhome.lib.cache.converter.IEncryptConverter;
+import cn.linhome.lib.cache.converter.IObjectConverter;
+
+abstract class FAbstractDisk implements IDisk, IDiskInfo
 {
     private File mDirectory;
 
@@ -34,9 +20,8 @@ abstract class ASDDisk implements ISDDisk, ISDDiskInfo
     private IObjectConverter mObjectConverter;
 
     private boolean mMemorySupport;
-    private static final Map<String, Object> MAP_MEMORY = new ConcurrentHashMap<>();
 
-    protected ASDDisk(File directory)
+    protected FAbstractDisk(File directory)
     {
         mDirectory = directory;
     }
@@ -49,11 +34,6 @@ abstract class ASDDisk implements ISDDisk, ISDDiskInfo
     public static void init(Context context)
     {
         mContext = context.getApplicationContext();
-    }
-
-    public static void setDebug(boolean debug)
-    {
-        LogUtils.setDebug(debug);
     }
 
     /**
@@ -76,56 +56,75 @@ abstract class ASDDisk implements ISDDisk, ISDDiskInfo
         sGlobalObjectConverter = globalObjectConverter;
     }
 
+    //---------- IDisk start ----------
+
     @Override
-    public ASDDisk setEncrypt(boolean encrypt)
+    public FAbstractDisk setEncrypt(boolean encrypt)
     {
         mEncrypt = encrypt;
         return this;
     }
 
     @Override
-    public ASDDisk setEncryptConverter(IEncryptConverter encryptConverter)
-    {
-        mEncryptConverter = encryptConverter;
-        return this;
-    }
-
-    @Override
-    public ASDDisk setObjectConverter(IObjectConverter objectConverter)
-    {
-        mObjectConverter = objectConverter;
-        return this;
-    }
-
-    @Override
-    public ASDDisk setMemorySupport(boolean memorySupport)
+    public FAbstractDisk setMemorySupport(boolean memorySupport)
     {
         mMemorySupport = memorySupport;
         return this;
     }
 
     @Override
-    public File getDirectory()
+    public FAbstractDisk setEncryptConverter(IEncryptConverter encryptConverter)
     {
-        return mDirectory;
+        mEncryptConverter = encryptConverter;
+        return this;
     }
 
     @Override
-    public long size()
+    public FAbstractDisk setObjectConverter(IObjectConverter objectConverter)
+    {
+        mObjectConverter = objectConverter;
+        return this;
+    }
+
+    @Override
+    public final long size()
     {
         return mDirectory.length();
     }
 
     @Override
-    public synchronized void delete()
+    public final void delete()
     {
-        Utils.deleteFileOrDir(mDirectory);
+        synchronized (FDisk.class)
+        {
+            deleteFileOrDir(mDirectory);
+        }
     }
+
+    //---------- IDisk end ----------
+
+    //---------- IDiskInfo start ----------
 
     @Override
     public final boolean isEncrypt()
     {
         return mEncrypt;
+    }
+
+    @Override
+    public final boolean isMemorySupport()
+    {
+        return mMemorySupport;
+    }
+
+    @Override
+    public final File getDirectory()
+    {
+        if (!mDirectory.exists())
+        {
+            mDirectory.mkdirs();
+        }
+        return mDirectory;
     }
 
     @Override
@@ -152,34 +151,7 @@ abstract class ASDDisk implements ISDDisk, ISDDiskInfo
         }
     }
 
-    public boolean isMemorySupport()
-    {
-        return mMemorySupport;
-    }
-
-    protected final void removeMemory(String key, AObjectHandler handler)
-    {
-        MAP_MEMORY.remove(handler.getRealKey(key));
-    }
-
-    protected final void putMemory(String key, Object object, AObjectHandler handler)
-    {
-        if (isMemorySupport())
-        {
-            MAP_MEMORY.put(handler.getRealKey(key), object);
-        }
-    }
-
-    protected final <T> T getMemory(String key, AObjectHandler handler)
-    {
-        if (isMemorySupport())
-        {
-            return (T) MAP_MEMORY.get(handler.getRealKey(key));
-        } else
-        {
-            return null;
-        }
-    }
+    //---------- IDiskInfo end ----------
 
     //---------- util method start ----------
 
@@ -192,7 +164,7 @@ abstract class ASDDisk implements ISDDisk, ISDDiskInfo
     {
         if (mContext == null)
         {
-            throw new NullPointerException("you must invoke init() method before this");
+            throw new NullPointerException("you must invoke FDisk.init(Context) method before this");
         }
     }
 
@@ -202,7 +174,7 @@ abstract class ASDDisk implements ISDDisk, ISDDiskInfo
      * @param dirName
      * @return
      */
-    protected static File getExternalFilesDir(String dirName)
+    protected static final File getExternalFilesDir(String dirName)
     {
         checkContext();
         File dir = getContext().getExternalFilesDir(dirName);
@@ -215,7 +187,7 @@ abstract class ASDDisk implements ISDDisk, ISDDiskInfo
      * @param dirName
      * @return
      */
-    protected static File getExternalCacheDir(String dirName)
+    protected static final File getExternalCacheDir(String dirName)
     {
         checkContext();
         File dir = new File(getContext().getExternalCacheDir(), dirName);
@@ -228,7 +200,7 @@ abstract class ASDDisk implements ISDDisk, ISDDiskInfo
      * @param dirName
      * @return
      */
-    protected static File getInternalFilesDir(String dirName)
+    protected static final File getInternalFilesDir(String dirName)
     {
         checkContext();
         File dir = new File(getContext().getFilesDir(), dirName);
@@ -241,11 +213,32 @@ abstract class ASDDisk implements ISDDisk, ISDDiskInfo
      * @param dirName
      * @return
      */
-    protected static File getInternalCacheDir(String dirName)
+    protected static final File getInternalCacheDir(String dirName)
     {
         checkContext();
         File dir = new File(getContext().getCacheDir(), dirName);
         return dir;
+    }
+
+    private static boolean deleteFileOrDir(File path)
+    {
+        if (path == null || !path.exists())
+        {
+            return true;
+        }
+        if (path.isFile())
+        {
+            return path.delete();
+        }
+        File[] files = path.listFiles();
+        if (files != null)
+        {
+            for (File file : files)
+            {
+                deleteFileOrDir(file);
+            }
+        }
+        return path.delete();
     }
 
     //---------- util method end ----------

@@ -1,7 +1,7 @@
 package cn.linhome.cache.converter;
 
 import cn.linhome.cache.AESUtil;
-import cn.linhome.lib.cache.IEncryptConverter;
+import cn.linhome.lib.cache.converter.IEncryptConverter;
 
 /**
  * Created by Administrator on 2017/8/29.
